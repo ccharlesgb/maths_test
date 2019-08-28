@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_praetorian import Praetorian
 from flask_marshmallow import Marshmallow
-from marshmallow import fields
+from marshmallow import fields, validate
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -53,6 +53,72 @@ class Role(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
+class Test(db.Model):
+    """
+    This model represents a test to be taken
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    pass_fraction = db.Column(db.Float, nullable=False)
+
+
+class Question(db.Model):
+    """
+    This model represents a question inside a test
+    Questions can only be a part of a single test.
+
+    TODO: Create mapping table so we can have a bank of questions and create tests from here?
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String(128), nullable=False)
+    test_id = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
+
+    test = db.relationship("Test", backref=db.backref("questions"))
+
+
+class Option(db.Model):
+    """
+    This model defines an option for the question. Whether the answer is correct is stored here, multiple answers
+    can be correct
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    question_id = db.Column(db.Integer, db.ForeignKey("question.id"), nullable=False)
+    value = db.Column(db.Text, nullable=False)
+    correct = db.Column(db.Boolean, nullable=False, default=False)
+
+    question = db.relationship("Question", backref=db.backref("options", lazy=True))
+
+
+class Attempt(db.Model):
+    """
+    This marks an attempt by a user to take a test. Once they have completed the test you can calculate the
+    percentage
+
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    test_id = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
+    started_utc = db.Column(db.DateTime, nullable=False)
+    completed_utc = db.Column(db.DateTime, nullable=True)
+
+
+class Answer(db.Model):
+    """
+    This marks an individual option chosen by a user for a given attempt
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_id = db.Column(db.Integer, db.ForeignKey("attempt.id"), nullable=False)
+    option_id = db.Column(db.Integer, db.ForeignKey("option.id"), nullable=False)
+    chosen_utc = db.Column(db.DateTime, nullable=False)
+
+
+"""
+Schemas for models
+
+TODO: Think about validation in serializers here
+"""
+
+
 class UserSchema(ma.ModelSchema):
     role = fields.Nested("RoleSchema", only=["name"])
     email = fields.Email()
@@ -66,3 +132,30 @@ class UserSchema(ma.ModelSchema):
 class RoleSchema(ma.ModelSchema):
     class Meta:
         model = Role
+
+
+class TestSchema(ma.ModelSchema):
+    pass_fraction = fields.Float(validate=validate.Range(min=0.0, max=1.0))
+
+    class Meta:
+        model = Test
+
+
+class QuestionSchema(ma.ModelSchema):
+    class Meta:
+        model = Question
+
+
+class OptionSchema(ma.ModelSchema):
+    class Meta:
+        model = Option
+
+
+class AttemptSchema(ma.ModelSchema):
+    class Meta:
+        model = Attempt
+
+
+class AnswerSchema(ma.ModelSchema):
+    class Meta:
+        model = Answer
