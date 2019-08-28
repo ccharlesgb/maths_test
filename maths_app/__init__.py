@@ -1,5 +1,7 @@
 from flask import Flask
 import os
+from .models import db, guard, ma
+from .api import api
 
 
 class Defaults:
@@ -17,5 +19,11 @@ def create_app(dict_config=None):
     else:
         app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["APP_DATABASE"]
         app.config["SECRET_KEY"] = os.environ["APP_SECRET"]
+
+    app.register_blueprint(api)
+
+    db.init_app(app)
+    ma.init_app(app)
+    guard.init_app(app)
 
     return app

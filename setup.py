@@ -21,7 +21,8 @@ setup(name='maths_test',
           "uwsgi",
           "flask-marshmallow",
           "marshmallow-sqlalchemy",
-          "flask-dotenv"
+          "flask-dotenv",
+          "flask-praetorian"
       ],
       extras_require={
           "dev": [
