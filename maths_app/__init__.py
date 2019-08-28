@@ -1,6 +1,6 @@
 from flask import Flask
 import os
-from .models import db, guard, ma
+from .models import db, guard, ma, User
 from .api import api
 
 
@@ -24,6 +24,6 @@ def create_app(dict_config=None):
 
     db.init_app(app)
     ma.init_app(app)
-    guard.init_app(app)
+    guard.init_app(app, User)
 
     return app
