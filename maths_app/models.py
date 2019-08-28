@@ -21,7 +21,7 @@ class User(db.Model):
 
     # Extra Info
     full_name = db.Column(db.String(256), unique=False, nullable=False)
-    email = db.Column(db.String(256), unique=False, nullable=False)
+    email = db.Column(db.String(256), unique=False, nullable=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)
 
