@@ -62,8 +62,22 @@ def test_create_test_student(client):
     assert response.status_code == 403
 
 
-def test_get_test_disabled_student(client):
-    pass
+def test_get_test_disabled_student(client_sample_q):
+    auth_header_student = utils.get_user_header(client_sample_q, "jsmith")
+    response = client_sample_q.get("/api/test/1", headers=auth_header_student)
+    # This test should be disabled by the client setup
+    assert response.status_code == 404
+
+    # Enable it as a teacher
+    auth_header_teacher = utils.get_user_header(client_sample_q, "stiger")
+    response = client_sample_q.patch("/api/test/1", headers=auth_header_teacher)
+    assert "enabled" in response.json["message"]
+
+    # Check we can see it now
+    auth_header_student = utils.get_user_header(client_sample_q, "jsmith")
+    response = client_sample_q.get("/api/test/1", headers=auth_header_student)
+    # This test should be disabled by the client setup
+    assert response.status_code == 200
 
 
 def test_create_question(client):

@@ -2,6 +2,7 @@ from flask import Flask
 import os
 from .models import db, guard, ma, User
 from .api import api
+from . import exc
 
 
 class Defaults:
@@ -21,6 +22,7 @@ def create_app(dict_config=None):
         app.config["SECRET_KEY"] = os.environ["APP_SECRET"]
 
     app.register_blueprint(api)
+    app.errorhandler(exc.APIError)(exc.handle_api_error)
 
     db.init_app(app)
     ma.init_app(app)

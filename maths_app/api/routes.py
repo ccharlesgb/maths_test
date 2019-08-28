@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from maths_app import guard, utils, models
+from maths_app import guard, utils, models, exc
 from maths_app.models import db
 from flask_praetorian import auth_required, current_user, roles_required, roles_accepted
 from sqlalchemy.orm import exc as orm_exc
@@ -43,13 +43,22 @@ def register_user():
     return jsonify({"message": "New user created", "id": new_user.id}), 201
 
 
+def _check_test_visible(test):
+    # Student's can't see disabled tests only teachers/admins
+    if current_user().rolenames == ["student"] and not test.enabled:
+        raise exc.APIError("NOT_FOUND", "Could not find test with id={}".format(id))
+
+
 @api.route("/test/<id>", methods=["GET"])
 @auth_required
 def get_test(id):
-    test_row = db.Test.query.filter_by(id=id).one_or_none()
+    test_row = models.Test.query.filter_by(id=id).one_or_none()
     if test_row is None:
-        return jsonify({"error": "NOT_FOUND", "message": "Could not find test with id={}".format(id)}), 404
-    return models.TestSchema().dump(test_row)
+        raise exc.APIError("NOT_FOUND", "Could not find test with id={}".format(id))
+
+    _check_test_visible(test_row)
+
+    return models.TestSchema().dump(test_row), 200
 
 
 @api.route("/test", methods=["POST"])
@@ -68,7 +77,7 @@ def toggle_test_enabled(id):
     try:
         test = models.Test.query.filter_by(id=id).one()
     except orm_exc.NoResultFound as e:
-        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(id)}), 404
+        raise exc.APIError("NOT_FOUND", "Could not find test with id={}".format(id))
     test.enabled = not test.enabled
     db.session.commit()
 
@@ -82,7 +91,7 @@ def add_question(test_id):
     try:
         test = models.Test.query.filter_by(id=test_id).one()
     except orm_exc.NoResultFound as e:
-        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(test_id)}), 404
+        raise exc.APIError("NOT_FOUND", "Could not find test with id={}".format(id))
     req_data = request.get_json(force=True)
     new_question = models.QuestionSchema().load(req_data)
     new_question.test = test
@@ -95,17 +104,12 @@ def add_question(test_id):
 @api.route("/test/<test_id>/question/<question_id>", methods=["GET"])
 @auth_required
 def get_question(test_id, question_id):
-    # TODO: Probably more natural to migrate to a question number here instead of the raw DB id?
     try:
         question = models.Question.query.filter_by(test_id=test_id, id=question_id).one()
     except orm_exc.NoResultFound as e:
-        return jsonify({"error": "NOT_FOUND",
-                        "message": "No question in test={} found with id={}".format(test_id, question_id)}), 404
-    print(current_user().rolenames)
+        raise exc.APIError("NOT_FOUND", "No question in test={} found with id={}".format(test_id, question_id))
 
-    # Student's can't see disabled tests only teachers/admins
-    if current_user().rolenames == ["student"] and not question.test.enabled:
-        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(test_id)}), 404
+    _check_test_visible(question.test)
 
     question_data = models.QuestionSchema().dump(question)
     return jsonify(question_data), 200
