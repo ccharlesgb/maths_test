@@ -142,6 +142,8 @@ class TestSchema(ma.ModelSchema):
 
 
 class QuestionSchema(ma.ModelSchema):
+    options = fields.Nested("OptionSchema", only=["value", "correct"], many=True)
+
     class Meta:
         model = Question
 

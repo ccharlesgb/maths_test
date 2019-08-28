@@ -1,6 +1,6 @@
 import pytest
 from maths_app import create_app
-from maths_app.utils import init_db
+from maths_app.utils import init_db, create_user
 
 
 @pytest.fixture
@@ -10,6 +10,8 @@ def client():
 
     with app.app_context():
         init_db()
+        create_user("stiger", "1234", "teacher", "Scott Tiger", "scott.tiger@mail.com")
+        create_user("jsmith", "1234", "student", "John Smith", "john.smith@mail.com")
 
     app.testing = True
     test_client = app.test_client()

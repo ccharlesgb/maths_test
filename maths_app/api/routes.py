@@ -1,9 +1,12 @@
 from flask import Blueprint, request, jsonify
 from maths_app import guard, utils, models
 from maths_app.models import db
-from flask_praetorian import auth_required, current_user
+from flask_praetorian import auth_required, current_user, roles_required, roles_accepted
+from sqlalchemy.orm import exc as orm_exc
 
 api = Blueprint("api", __name__, url_prefix="/api")
+
+restricted = roles_accepted("admin", "teacher")
 
 
 @api.route("/login", methods=["POST"])
@@ -15,7 +18,7 @@ def login():
     """
     req_data = request.get_json(force=True)
     user = guard.authenticate(req_data.get("username"), req_data.get("password"))
-    return jsonify({"token": guard.encode_jwt_token(user)})
+    return jsonify({"token": guard.encode_jwt_token(user)}), 201
 
 
 @api.route("/current_user", methods=["GET"])
@@ -37,4 +40,59 @@ def register_user():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "New user created", "id": new_user.id}), 200
+    return jsonify({"message": "New user created", "id": new_user.id}), 201
+
+
+@api.route("/test/<id>", methods=["GET"])
+@auth_required
+def get_test(id):
+    test_row = db.Test.query.filter_by(id=id).one_or_none()
+    if test_row is None:
+        return jsonify({"error": "NOT_FOUND", "message": "Could not find test with id={}".format(id)}), 404
+    return models.TestSchema().dump(test_row)
+
+
+@api.route("/test", methods=["POST"])
+@restricted
+def add_test():
+    req_data = request.get_json(force=True)
+    new_test = models.TestSchema().load(req_data)
+    db.session.add(new_test)
+    db.session.commit()
+    return jsonify({"message": "New user created", "id": new_test.id}), 201
+
+
+@api.route("/test/<test_id>/question", methods=["POST"])
+@restricted
+def add_question(test_id):
+    try:
+        test = models.Test.query.filter_by(id=test_id).one()
+    except orm_exc.NoResultFound as e:
+        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(test_id)}), 404
+    req_data = request.get_json(force=True)
+    new_question = models.QuestionSchema().load(req_data)
+    new_question.test = test
+    models.db.session.add(new_question)
+    models.db.session.commit()
+
+    return jsonify({"message": "Neq question created", "id": new_question.id}), 201
+
+
+@api.route("/test/<test_id>/question/<question_id>", methods=["GET"])
+@auth_required
+def get_question(test_id, question_id):
+    # TODO: Move repeated code to error handler
+    try:
+        test = models.Test.query.filter_by(id=test_id).one()
+    except orm_exc.NoResultFound as e:
+        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(test_id)}), 404
+
+    # TODO: Probably more natural to migrate to a question number here instead of the raw DB id?
+    try:
+        question = models.Question.query.filter_by(test_id=test_id, id=question_id).one()
+    except orm_exc.NoResultFound as e:
+        return jsonify({"error": "NOT_FOUND",
+                        "message": "No question in test found with id={}".format(question_id)}), 404
+
+    question_data = models.QuestionSchema().dump(question)
+    return jsonify(question_data), 200
