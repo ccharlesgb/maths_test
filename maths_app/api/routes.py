@@ -62,6 +62,20 @@ def add_test():
     return jsonify({"message": "New user created", "id": new_test.id}), 201
 
 
+@api.route("/test/<id>", methods=["PATCH"])
+@restricted
+def toggle_test_enabled(id):
+    try:
+        test = models.Test.query.filter_by(id=id).one()
+    except orm_exc.NoResultFound as e:
+        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(id)}), 404
+    test.enabled = not test.enabled
+    db.session.commit()
+
+    new_state = "enabled" if test.enabled else "disabled"
+    return jsonify({"message": "The test was {}".format(new_state), "id": id}), 200
+
+
 @api.route("/test/<test_id>/question", methods=["POST"])
 @restricted
 def add_question(test_id):
@@ -81,18 +95,17 @@ def add_question(test_id):
 @api.route("/test/<test_id>/question/<question_id>", methods=["GET"])
 @auth_required
 def get_question(test_id, question_id):
-    # TODO: Move repeated code to error handler
-    try:
-        test = models.Test.query.filter_by(id=test_id).one()
-    except orm_exc.NoResultFound as e:
-        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(test_id)}), 404
-
     # TODO: Probably more natural to migrate to a question number here instead of the raw DB id?
     try:
         question = models.Question.query.filter_by(test_id=test_id, id=question_id).one()
     except orm_exc.NoResultFound as e:
         return jsonify({"error": "NOT_FOUND",
-                        "message": "No question in test found with id={}".format(question_id)}), 404
+                        "message": "No question in test={} found with id={}".format(test_id, question_id)}), 404
+    print(current_user().rolenames)
+
+    # Student's can't see disabled tests only teachers/admins
+    if current_user().rolenames == ["student"] and not question.test.enabled:
+        return jsonify({"error": "NOT_FOUND", "message": "No test found with id={}".format(test_id)}), 404
 
     question_data = models.QuestionSchema().dump(question)
     return jsonify(question_data), 200

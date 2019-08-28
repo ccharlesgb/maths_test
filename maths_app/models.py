@@ -60,6 +60,7 @@ class Test(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
     pass_fraction = db.Column(db.Float, nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False, default=False)
 
 
 class Question(db.Model):

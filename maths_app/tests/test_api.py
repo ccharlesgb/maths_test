@@ -41,12 +41,29 @@ def test_create_test(client):
     assert "id" in response.json.keys()
 
 
+def test_toggle_test_enable(client):
+    auth_header = utils.get_user_header(client, "stiger")  # Teacher Auth
+    test_data = {"name": "Algebra",
+                 "pass_fraction": 0.5,
+                 "enabled": 1}
+    response = client.post("/api/test", data=json.dumps(test_data), headers=auth_header)
+
+    auth_header = utils.get_user_header(client, "stiger")  # Teacher Auth
+    response = client.patch("/api/test/{}".format(response.json["id"]), headers=auth_header)
+    assert response.status_code == 200
+    assert "disabled" in response.json["message"]
+
+
 def test_create_test_student(client):
     auth_header = utils.get_user_header(client, "jsmith")  # Student Auth
     test_data = {"name": "Algebra",
                  "pass_fraction": 0.5}
     response = client.post("/api/test", data=json.dumps(test_data), headers=auth_header)
     assert response.status_code == 403
+
+
+def test_get_test_disabled_student(client):
+    pass
 
 
 def test_create_question(client):
