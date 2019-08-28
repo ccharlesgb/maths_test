@@ -36,7 +36,7 @@ def client_sample_q():
     app = _get_base_app()
     tests = []
     tests.append(models.Test(name="Algebra", pass_fraction=0.5, enabled=False))
-    tests.append(models.Test(name="Trig", pass_fraction=0.8, enabled=False))
+    tests.append(models.Test(name="Trig", pass_fraction=0.8, enabled=True))
 
     questions = []
     questions.append(generate_test_question("Q 1", 3, 1, test=tests[0]))

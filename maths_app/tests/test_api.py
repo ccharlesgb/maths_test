@@ -98,3 +98,16 @@ def test_create_question(client):
     # TODO: Compare the json more strictly here using some kind of testing util
     assert response.json["body"] == question_data["body"]
     assert len(question_data["options"]) == len(question_data["options"])
+
+
+def test_attempt_test(client_sample_q):
+    # TODO: Attempt trig test
+    # Steps:
+    # 1. Post to api/test/attempt
+    # 2. Return first question information
+    # 3. Post answer
+    # 4. Return next question information
+    # 5. Post answer
+    # 6. Return notification that all questions have been answered and return attempt information again
+    # This will now have the percentage correct and if it was pass/fail
+    pass
