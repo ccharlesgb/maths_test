@@ -3,8 +3,8 @@ from flask_praetorian import auth_required, current_user
 from flask_praetorian import roles_required
 from sqlalchemy.orm.exc import NoResultFound
 
-from maths_app import guard, utils, models, exc
-from maths_app.models import db
+from maths_app import utils, models, exc
+from maths_app.models import db, guard
 from . import api
 
 

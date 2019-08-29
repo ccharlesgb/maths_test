@@ -26,6 +26,9 @@ def init_db():
     db.session.commit()
 
     create_user("admin", os.environ.get("APP_ADMIN_PASS", "admin"), "admin", "Admin")
+    # TODO: Testing purposes only so the app has some defalut users to play with
+    create_user("teacher", "teacher1", "teacher", "Teacher 1")
+    create_user("student", "student1", "student", "Student 1")
 
 
 def create_user(username, password, rolename, full_name, email=None):
