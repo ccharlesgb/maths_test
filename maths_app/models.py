@@ -101,7 +101,7 @@ class Attempt(db.Model):
     test_id = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
     started_utc = db.Column(db.DateTime, nullable=False)
     completed_utc = db.Column(db.DateTime, nullable=True)
-    mark = db.Column(db.Integer, nullable=False)
+    mark = db.Column(db.Integer, nullable=True)
 
 
 class Answer(db.Model):
