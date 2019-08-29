@@ -5,7 +5,7 @@ from flask import Flask
 from . import exc
 from .api import api
 from .models import db, guard, ma, User
-
+from marshmallow.exceptions import ValidationError
 
 class Defaults:
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
@@ -25,6 +25,7 @@ def create_app(dict_config=None):
 
     app.register_blueprint(api)
     app.errorhandler(exc.APIError)(exc.handle_api_error)
+    app.errorhandler(ValidationError)(exc.handle_marshmallow_error)
 
     db.init_app(app)
     ma.init_app(app)

@@ -41,6 +41,15 @@ def test_create_test(client):
     assert "id" in response.json.keys()
 
 
+def test_create_bad_test(client):
+    auth_header = utils.get_user_header(client, "stiger")  # Teacher Auth
+    test_data = {"name": "Algebra",
+                 "pass_fraction": 2.0}
+    response = client.post("/api/tests", data=json.dumps(test_data), headers=auth_header)
+    assert response.status_code == 400
+    assert response.json["error"] == "VALIDATION_ERROR"
+
+
 def test_get_tests(client_sample_q):
     auth_header = utils.get_user_header(client_sample_q, "stiger")  # Teacher Auth
     response = client_sample_q.get("/api/tests", headers=auth_header)

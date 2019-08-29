@@ -18,3 +18,8 @@ class APIError(Exception):
 
 def handle_api_error(error):
     return jsonify(error.response_data), error.status_code
+
+
+def handle_marshmallow_error(error):
+    error_data = {"error": "VALIDATION_ERROR", "messages": error.messages}
+    return jsonify(error_data), 400
