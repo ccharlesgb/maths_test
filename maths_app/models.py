@@ -87,7 +87,7 @@ class Option(db.Model):
     value = db.Column(db.Text, nullable=False)
     correct = db.Column(db.Boolean, nullable=False, default=False)
 
-    question = db.relationship("Question", backref=db.backref("options", lazy=True))
+    question = db.relationship("Question", backref=db.backref("options", lazy="joined"))
 
 
 class Attempt(db.Model):
@@ -101,6 +101,7 @@ class Attempt(db.Model):
     test_id = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
     started_utc = db.Column(db.DateTime, nullable=False)
     completed_utc = db.Column(db.DateTime, nullable=True)
+    mark = db.Column(db.Integer, nullable=False)
 
 
 class Answer(db.Model):
