@@ -27,7 +27,7 @@ def add_test():
     new_test = models.TestSchema().load(req_data)
     db.session.add(new_test)
     db.session.commit()
-    return jsonify({"message": "New user created", "id": new_test.id}), 201
+    return jsonify({"message": "New test created", "id": new_test.id}), 201
 
 
 @api.route("/tests", methods=["GET"])

@@ -4,6 +4,7 @@ services:
     environment:
       APP_DATABASE: "postgresql+psycopg2://postgres:changeme@postgres:5432"
       APP_SECRET: r3rju23j0jfa
+      APP_JWT_ACCESS: "10080" # Set to a week here to make postman requests running easier
 
     build: .
     ports:

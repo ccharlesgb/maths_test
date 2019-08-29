@@ -7,6 +7,7 @@ from .api import api
 from .models import db, guard, ma, User
 from marshmallow.exceptions import ValidationError
 
+
 class Defaults:
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
     SECRET_KEY = "jdj239adka0ak"  # Change for prod
@@ -22,6 +23,7 @@ def create_app(dict_config=None):
     else:
         app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["APP_DATABASE"]
         app.config["SECRET_KEY"] = os.environ["APP_SECRET"]
+        app.config["JWT_ACCESS_LIFESPAN"] = {"minutes": int(os.environ.get("APP_JWT_ACCESS", 60))}
 
     app.register_blueprint(api)
     app.errorhandler(exc.APIError)(exc.handle_api_error)

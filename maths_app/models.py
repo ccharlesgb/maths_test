@@ -58,7 +58,7 @@ class Test(db.Model):
     This model represents a test to be taken
     """
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(128), nullable=False, unique=True)
     pass_fraction = db.Column(db.Float, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, default=False)
 
