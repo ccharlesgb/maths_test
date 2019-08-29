@@ -2,7 +2,7 @@ from flask import jsonify
 
 
 class APIError(Exception):
-    allowed_categories = {"NOT_FOUND": 404}
+    allowed_categories = {"NOT_FOUND": 404, "INVALID_USAGE": 400}
 
     def __init__(self, category, message, status_code=None):
         if category not in self.allowed_categories.keys():

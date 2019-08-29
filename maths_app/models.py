@@ -113,6 +113,8 @@ class Answer(db.Model):
     option_id = db.Column(db.Integer, db.ForeignKey("option.id"), nullable=False)
     chosen_utc = db.Column(db.DateTime, nullable=False)
 
+    attempt = db.relationship("Attempt", backref=db.backref("answers", lazy="joined"))
+    option = db.relationship("Option")
 
 """
 Schemas for models
@@ -157,6 +159,7 @@ class OptionSchema(ma.ModelSchema):
 
 class AttemptSchema(ma.ModelSchema):
     started_utc = fields.DateTime()
+
     class Meta:
         # dateformat = '%Y-%m-%dT%H:%M:%S'
         model = Attempt

@@ -9,7 +9,7 @@ def test_start_attempt_test(client_sample_q):
 
     # Get and pick out the first test the student can see
     all_tests = client_sample_q.get("/api/tests", headers=auth_header_student).json
-    print(all_tests)
+
     active_test = all_tests[0]
 
     # Check we can't see this tests questions yet
@@ -53,15 +53,20 @@ def test_complete_test(client_sample_q, test_name, target_marks):
 
     expected_marks = 0
     for question in test_questions:
-        endpoint = "/api/tests/{}/attempts/{}/answer".format(active_test, attempt_id, question["id"])
-        # Pick first correct id
-        correct_id = [elem["id"] for elem in question["options"] if elem["correct"]][0]
-        answer = {"option_id": correct_id}
+        # Pick first correct id if we are below our target mark
+        if expected_marks < target_marks:
+            option_id = [elem["id"] for elem in question["options"] if elem["correct"]][0]
+            expected_marks += 1
+        else:  # otherwise pick the wrong answer
+            option_id = [elem["id"] for elem in question["options"] if not elem["correct"]][0]
+        answer = {"option_id": option_id}
 
-        response = client_sample_q.post(endpoint, data=answer, headers=auth_header_student)
+        endpoint = "/api/tests/{}/attempts/{}/answer".format(active_test["id"], attempt_id, question["id"])
+        response = client_sample_q.post(endpoint, data=json.dumps(answer), headers=auth_header_student)
         assert response.status_code == 201
 
     response = client_sample_q.get("/api/tests/{}/attempts/{}".format(active_test["id"], attempt_id),
                                    headers=auth_header_student)
     # Check that we got the expected amount of marks
+    assert response.json["completed_utc"] is not None
     assert response.json["mark"] == expected_marks

@@ -5,7 +5,7 @@ from sqlalchemy.orm import exc as orm_exc
 from maths_app import models, exc
 from maths_app.models import db
 from . import api, restricted, student_only
-from .common import check_test_id_visible, is_student
+from .common import check_test_id_visible, is_student, check_user_is_attempting, get_test_question_count
 from datetime import datetime
 
 
@@ -59,5 +59,30 @@ def get_attempt(test_id, attempt_id):
 @student_only
 def answer_question(test_id, attempt_id):
     req_data = request.get_json(force=True)
+    check_user_is_attempting(test_id, True)
 
-    return jsonify({"a": 1}), 201
+    new_answer = models.Answer(option_id=req_data["option_id"], chosen_utc=datetime.utcnow(),
+                               attempt_id=attempt_id)
+    db.session.add(new_answer)
+    db.session.flush()
+
+    # Get the attempts answers by joining on attempt and option and then filtering out where the
+    # test id matches the question test id and the option question id matches the options question id
+    attempt_answers_query = db.session.query(models.Question, models.Answer)
+    attempt_answers_query = attempt_answers_query.join(models.Attempt).join(models.Option)
+    attempt_answers_query = attempt_answers_query.filter(models.Attempt.test_id == models.Question.test_id,
+                                                         models.Option.question_id == models.Question.id)
+    attempt_answers = attempt_answers_query.all()
+    # We have completed the test
+    if len(attempt_answers) == get_test_question_count(test_id):
+        mark = 0
+        for (question, answer) in attempt_answers:
+            if answer.option.correct:
+                mark += 1
+        attempt = models.Attempt.query.get(attempt_id)
+        attempt.completed_utc = datetime.utcnow()
+        attempt.mark = mark
+
+    db.session.commit()
+
+    return jsonify({"message": "New answer created", "id": new_answer.id}), 201
