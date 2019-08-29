@@ -1,0 +1,24 @@
+version: '3'
+services:
+  web:
+    environment:
+      APP_DATABASE: "postgresql+psycopg2://postgres:changeme@postgres:5432"
+      APP_SECRET: r3rju23j0jfa
+
+    build: .
+    ports:
+      - "80:80"
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: changeme
+    ports:
+      - "5432:5432"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080

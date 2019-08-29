@@ -38,3 +38,4 @@ webassets==0.12.1
 Werkzeug==0.15.5
 zipp==0.6.0
 uwsgi
+psycopg2-binary

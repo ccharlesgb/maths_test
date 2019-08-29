@@ -10,7 +10,7 @@ setup(name='maths_test',
       python_requires=">=3.6",
       entry_points={
           'console_scripts': [
-              'maths-test:maths_test.cli:cli',
+              'maths-test=maths_app.cli:cli',
           ], },
       install_requires=[
           "flask>=1.1",
