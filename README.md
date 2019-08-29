@@ -7,9 +7,18 @@ the features requested in the project spec.
 
 ## Quick-start
 
-The app can be deployed straight away with the docker-compose file present in the repo. I will admit Docker
-isn't a technology I was familiar with before so but I was keen to use this task as an opportunity to learn
-something new so I spent a bit of time researching how to use it before starting this repo.
+The app can be deployed straight away with the docker-compose file present in the repo. Docker
+isn't a technology I was familiar with before (I am currently deploying with IIS) so but I was keen to use this task
+ as an opportunity to learn something new so I spent a bit of time researching how to use it before starting this repo.
+
+Citation on what I based docker set up on: 
+
+```
+https://medium.com/@smirnov.am/running-flask-in-production-with-docker-1932c88f14d0
+```
+
+This setup seemed to be the best setup as lot of online resources still use the Flask debug web server which is
+not suitable for production.
 
 The docker-compose setup here is more to aid in enabling you to inspect the applications behaviour than 
 a production deploy as the passwords are mostly left as defaults and I just used the default postgres user 
@@ -27,7 +36,18 @@ docker exec -it mathstest_web_1 /bin/bash
 This will build and run the image and then invoke the initdb command in the applications CLI to create
 the tables in postgres and create the admin user.
 
-There will also be an adminer image running as well so you can inspect the status of the database
+There will also be an adminer image running as well so you can inspect the status of the database.
+
+There is a postman collection included in this repo which should go through the whole process of:
+
+1. Adding a test as a teacher
+2. Adding a question to that test
+3. Enabling the test for use by students
+4. Taking the test as a student
+5. Getting your mark.
+
+You may find you need to refresh the {{adm_jwt}} and the {{student_jwt}} tokens in the postman collection variables and
+{{host}} should be set to 'http://localhost:80' if you are running the docker containers.
 
 ## Running Tests
 
