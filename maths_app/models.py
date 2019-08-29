@@ -1,6 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask_praetorian import Praetorian
 from flask_marshmallow import Marshmallow
+from flask_praetorian import Praetorian
+from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields, validate
 
 db = SQLAlchemy()
@@ -115,6 +115,7 @@ class Answer(db.Model):
 
     attempt = db.relationship("Attempt", backref=db.backref("answers", lazy="joined"))
     option = db.relationship("Option")
+
 
 """
 Schemas for models

@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_praetorian import auth_required, current_user, current_rolenames
+from flask_praetorian import auth_required, current_user
 from sqlalchemy.orm import exc as orm_exc
 
 from maths_app import models, exc

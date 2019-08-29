@@ -1,8 +1,9 @@
 import pytest
+from itertools import chain
+
 from maths_app import create_app, db, models
 from maths_app.utils import init_db, create_user
 from .utils import generate_test_question
-from itertools import chain
 
 
 def _get_base_app():

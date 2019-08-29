@@ -1,12 +1,12 @@
+from datetime import datetime
+
 from flask import request, jsonify
-from flask_praetorian import auth_required, current_user, current_rolenames
-from sqlalchemy.orm import exc as orm_exc
+from flask_praetorian import auth_required, current_user
 
 from maths_app import models, exc
 from maths_app.models import db
-from . import api, restricted, student_only
+from . import api, student_only
 from .common import check_test_id_visible, is_student, check_user_is_attempting, get_test_question_count
-from datetime import datetime
 
 
 @api.route("/tests/<test_id>/attempts", methods=["POST"])

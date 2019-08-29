@@ -1,6 +1,7 @@
+from string import ascii_uppercase
+
 from maths_app import User, guard
 from maths_app import models
-from string import ascii_uppercase
 
 
 def get_user_header(client, username="this"):

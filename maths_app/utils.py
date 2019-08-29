@@ -1,5 +1,6 @@
-from .models import db, guard, User, Role
 import os
+
+from .models import db, guard, User, Role
 
 DEFAULT_ROLES = ["admin", "teacher", "student"]
 

@@ -1,5 +1,5 @@
 import json
-from maths_app.models import User, guard
+
 from . import utils
 
 
@@ -45,7 +45,7 @@ def test_get_tests(client_sample_q):
     auth_header = utils.get_user_header(client_sample_q, "stiger")  # Teacher Auth
     response = client_sample_q.get("/api/tests", headers=auth_header)
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
 
 
 def test_toggle_test_enable(client):

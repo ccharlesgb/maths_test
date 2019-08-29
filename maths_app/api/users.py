@@ -1,11 +1,11 @@
 from flask import request, jsonify
 from flask_praetorian import auth_required, current_user
+from flask_praetorian import roles_required
+from sqlalchemy.orm.exc import NoResultFound
 
 from maths_app import guard, utils, models, exc
 from maths_app.models import db
 from . import api
-from flask_praetorian import roles_required
-from sqlalchemy.orm.exc import NoResultFound
 
 
 @api.route("/login", methods=["POST"])

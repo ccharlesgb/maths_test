@@ -1,4 +1,5 @@
 import json
+
 from . import utils
 
 
@@ -49,7 +50,7 @@ def test_promote_user(client):
 
     jwt_response = client.post("/api/login", data=json.dumps({"username": user, "password": password}))
     jwt_header = {"Authorization": "Bearer " + jwt_response.json["token"]}
-    
+
     # Test teacher protected route
     test_data = {"name": "Algebra",
                  "pass_fraction": 0.5}

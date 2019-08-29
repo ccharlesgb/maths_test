@@ -1,8 +1,10 @@
-from flask import Flask
 import os
-from .models import db, guard, ma, User
-from .api import api
+
+from flask import Flask
+
 from . import exc
+from .api import api
+from .models import db, guard, ma, User
 
 
 class Defaults:

@@ -1,7 +1,8 @@
 import json
-from maths_app.models import User, guard
-from . import utils
+
 import pytest
+
+from . import utils
 
 
 def test_start_attempt_test(client_sample_q):

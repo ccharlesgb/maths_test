@@ -1,4 +1,5 @@
-from flask_praetorian import auth_required, current_user, current_rolenames
+from flask_praetorian import current_user, current_rolenames
+
 from maths_app import models, exc
 
 
