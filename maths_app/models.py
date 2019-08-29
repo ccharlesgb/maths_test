@@ -101,7 +101,7 @@ class Attempt(db.Model):
     test_id = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
     started_utc = db.Column(db.DateTime, nullable=False)
     completed_utc = db.Column(db.DateTime, nullable=True)
-    mark = db.Column(db.Integer, nullable=False)
+    mark = db.Column(db.Integer, nullable=True)
 
 
 class Answer(db.Model):
@@ -144,7 +144,7 @@ class TestSchema(ma.ModelSchema):
 
 
 class QuestionSchema(ma.ModelSchema):
-    options = fields.Nested("OptionSchema", only=["value", "correct"], many=True)
+    options = fields.Nested("OptionSchema", only=["id", "value", "correct"], many=True)
 
     class Meta:
         model = Question
@@ -156,7 +156,9 @@ class OptionSchema(ma.ModelSchema):
 
 
 class AttemptSchema(ma.ModelSchema):
+    started_utc = fields.DateTime()
     class Meta:
+        # dateformat = '%Y-%m-%dT%H:%M:%S'
         model = Attempt
 
 

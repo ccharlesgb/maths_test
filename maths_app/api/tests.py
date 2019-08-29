@@ -5,15 +5,7 @@ from sqlalchemy.orm import exc as orm_exc
 from maths_app import models, exc
 from maths_app.models import db
 from . import api, restricted
-
-
-def _check_test_visible(test, raise_exc=False):
-    # Student's can't see disabled tests only teachers/admins
-    visible = "student" not in current_rolenames() or test.enabled
-    if not visible and raise_exc:
-        raise exc.APIError("NOT_FOUND", "Could not find test with id={}".format(id))
-
-    return visible
+from .common import check_test_visible, check_test_id_visible, is_student
 
 
 @api.route("/tests/<id>", methods=["GET"])
@@ -23,7 +15,7 @@ def get_test(id):
     if test_row is None:
         raise exc.APIError("NOT_FOUND", "Could not find test with id={}".format(id))
 
-    _check_test_visible(test_row, raise_exc=True)
+    check_test_visible(test_row, raise_exc=True)
 
     return models.TestSchema().dump(test_row), 200
 
@@ -39,10 +31,10 @@ def add_test():
 
 
 @api.route("/tests", methods=["GET"])
-@restricted
+@auth_required
 def get_all_tests():
     test_rows = models.Test.query.all()
-    test_rows = filter(_check_test_visible, test_rows)
+    test_rows = filter(check_test_visible, test_rows)
 
     return jsonify(models.TestSchema(many=True).dump(test_rows)), 200
 
@@ -85,7 +77,31 @@ def get_question(test_id, question_id):
     except orm_exc.NoResultFound as e:
         raise exc.APIError("NOT_FOUND", "No question in test={} found with id={}".format(test_id, question_id))
 
-    _check_test_visible(question.test, raise_exc=True)
+    check_test_visible(question.test, raise_exc=True)
 
     question_data = models.QuestionSchema().dump(question)
+    return jsonify(question_data), 200
+
+
+@api.route("/tests/<test_id>/questions", methods=["GET"])
+@auth_required
+def get_all_question(test_id):
+    check_test_id_visible(test_id)
+
+    question_query = models.Question.query.filter_by(test_id=test_id)
+    if is_student():
+        # Can only serve questions the student has an active test on
+        user_id = current_user().id
+        active_tests = db.session.query(models.Attempt.test_id).filter_by(user_id=user_id)
+        active_tests = active_tests.filter(models.Attempt.completed_utc == None)  # noqa
+        active_tests = active_tests.distinct().subquery()
+
+        question_query = question_query.filter(models.Question.test_id.in_(active_tests))
+
+    questions = question_query.all()
+
+    if not questions:
+        raise exc.APIError("NOT_FOUND", "No questions found for test={}".format(test_id))
+
+    question_data = models.QuestionSchema(many=True).dump(questions)
     return jsonify(question_data), 200

@@ -37,6 +37,7 @@ def client_sample_q():
     tests = []
     tests.append(models.Test(name="Algebra", pass_fraction=0.5, enabled=False))
     tests.append(models.Test(name="Trig", pass_fraction=0.8, enabled=True))
+    tests.append(models.Test(name="Trig 2", pass_fraction=0.8, enabled=True))
 
     questions = []
     questions.append(generate_test_question("Q 1", 3, 1, test=tests[0]))
@@ -44,6 +45,7 @@ def client_sample_q():
     questions.append(generate_test_question("Q 3", 4, 1, test=tests[1]))
     questions.append(generate_test_question("Q 4", 2, 1, test=tests[1]))
     questions.append(generate_test_question("Q 5", 6, 3, test=tests[1]))
+    questions.append(generate_test_question("Q 6", 3, 1, test=tests[2]))
 
     with app.app_context():
         db.session.add_all(chain(tests, questions))
