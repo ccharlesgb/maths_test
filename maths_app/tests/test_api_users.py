@@ -29,3 +29,29 @@ def test_register_user(client):
     response = client.post("/api/login", data=json.dumps({"username": user, "password": password}))
     assert response.status_code == 201
     assert "token" in response.json.keys()
+
+
+def test_promote_user(client):
+    user = "new_teacher"
+    password = "pass2"
+    user_data = {"username": user,
+                 "password": password,
+                 "email": "test@mail.com",
+                 "full_name": "New Teacher"}
+    response = client.post("/api/register", data=json.dumps(user_data))
+    teacher_id = response.json["id"]
+
+    admin_header = utils.get_user_header(client, "admin")
+    print("/api/users/{}".format(teacher_id))
+    response = client.patch("/api/users/{}".format(teacher_id), data=json.dumps({"role": "teacher"}),
+                            headers=admin_header)
+    assert "promoted" in response.json["message"]
+
+    jwt_response = client.post("/api/login", data=json.dumps({"username": user, "password": password}))
+    jwt_header = {"Authorization": "Bearer " + jwt_response.json["token"]}
+    
+    # Test teacher protected route
+    test_data = {"name": "Algebra",
+                 "pass_fraction": 0.5}
+    response = client.post("/api/tests", data=json.dumps(test_data), headers=jwt_header)
+    assert response.status_code == 201

@@ -1,9 +1,11 @@
 from flask import request, jsonify
 from flask_praetorian import auth_required, current_user
 
-from maths_app import guard, utils, models
+from maths_app import guard, utils, models, exc
 from maths_app.models import db
 from . import api
+from flask_praetorian import roles_required
+from sqlalchemy.orm.exc import NoResultFound
 
 
 @api.route("/login", methods=["POST"])
@@ -38,3 +40,21 @@ def register_user():
     db.session.commit()
 
     return jsonify({"message": "New user created", "id": new_user.id}), 201
+
+
+@api.route("/users/<id>", methods=["PATCH"])
+@roles_required("admin")
+def promote_user(id):
+    req_data = request.get_json(force=True)
+    if not req_data["role"]:
+        raise exc.APIError("INVALID_USAGE", "'role' key not supplied")
+    try:
+        role = utils.get_role(req_data["role"])
+    except NoResultFound as e:
+        raise exc.APIError("NOT_FOUND", "Could not find role '{}'".format(req_data["role"]))
+
+    user = models.User.query.get(id)
+    user.role = role
+    db.session.commit()
+
+    return {"message": "User successfully promoted", "id": user.id}
