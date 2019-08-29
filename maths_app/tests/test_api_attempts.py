@@ -70,3 +70,10 @@ def test_complete_test(client_sample_q, test_name, target_marks):
     # Check that we got the expected amount of marks
     assert response.json["completed_utc"] is not None
     assert response.json["mark"] == expected_marks
+
+    # Check that the teacher can see the attempt
+    auth_header_teacher = utils.get_user_header(client_sample_q, "stiger")
+    response_teacher = client_sample_q.get("/api/tests/{}/attempts".format(active_test["id"]),
+                                           headers=auth_header_teacher)
+    print(response_teacher.json)
+    assert response_teacher.json[0]["mark"] == response.json["mark"]

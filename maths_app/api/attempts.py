@@ -38,7 +38,7 @@ def _get_attempt_rows(test_id, attempt_id=None):
 @auth_required
 def get_all_attempts(test_id):
     attempt_rows = _get_attempt_rows(test_id)
-    attempts = models.AttemptSchema(many=True).load(attempt_rows)
+    attempts = models.AttemptSchema(many=True).dump(attempt_rows)
     return jsonify(attempts), 200
 
 
