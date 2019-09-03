@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from . import utils
 
 
@@ -114,3 +116,19 @@ def test_create_question(client):
     # TODO: Compare the json more strictly here using some kind of testing util
     assert response.json["body"] == question_data["body"]
     assert len(question_data["options"]) == len(question_data["options"])
+
+
+@pytest.mark.xfail(reason="This is not yet implemented", raises=AssertionError)
+def test_create_impossible_question(client):
+    auth_header = utils.get_user_header(client, "stiger")  # Teacher Auth
+    test_data = {"name": "Algebra",
+                 "pass_fraction": 0.5}
+    test_id = client.post("/api/tests", data=json.dumps(test_data), headers=auth_header).json["id"]
+
+    question_data = {"body": "What is 1+1?",
+                     "options": [{"value": "0", "correct": False},
+                                 {"value": "1", "correct": False},
+                                 {"value": "2", "correct": False}]}
+    end_point = "/api/tests/{0:}/questions".format(test_id)
+    response = client.post(end_point, data=json.dumps(question_data), headers=auth_header)
+    assert response.status_code == 400
